@@ -1,0 +1,658 @@
+package com.mycompany.resortfrontdesk;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.*;
+import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JOptionPane;
+import com.toedter.calendar.JDateChooser;
+
+public class CheckIn extends javax.swing.JFrame {
+    Connection con;
+    PreparedStatement pst;
+    ResultSet rs;
+    private Rooms rooms;
+
+    public CheckIn() {
+        initComponents();
+        Connection();
+        this.rooms = rooms;
+
+        
+        guestCheckInDate.getDateEditor().addPropertyChangeListener((evt) -> {
+            
+            if ("date".equals(evt.getPropertyName())) {
+                Date selectedDate = guestCheckInDate.getDate();
+                Date currentDate = new Date(); 
+
+                if (selectedDate != null && selectedDate.before(currentDate)) {
+                    
+                    JOptionPane.showMessageDialog(CheckIn.this, "Please select a future date.", "Invalid Date", JOptionPane.ERROR_MESSAGE);
+                    guestCheckInDate.setDate(null); 
+                }
+            }
+        });
+    }
+
+    public void Connection() {
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            con = DriverManager.getConnection("jdbc:mysql://localhost/resortfrontdesk", "root", "");
+        } catch (ClassNotFoundException | SQLException ex) {
+            Logger.getLogger(CheckIn.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+   
+private int calculateTotalCost() {
+    int baseCost = getRoomPrice(guestRoomCBox.getSelectedItem().toString());
+    int additionalCosts = calculateAdditionalCosts(baseCost);
+
+    int overnightCost = 0;
+    if (OvernightCheckBox.isSelected()) {
+        overnightCost = calculateOvernightCost(baseCost);
+    }
+
+    int totalCostBeforeDiscounts = baseCost + additionalCosts + overnightCost;
+
+    if (cbSeniorCitizen.isSelected()) {
+        double discountPercentage = 0.3;
+        int seniorCitizenDiscount = (int) (totalCostBeforeDiscounts * discountPercentage);
+        totalCostBeforeDiscounts -= seniorCitizenDiscount;
+    }
+
+    if (cbPWD.isSelected()) {
+        double discountPercentage = 0.3;
+        int pwdDiscount = (int) (totalCostBeforeDiscounts * discountPercentage);
+        totalCostBeforeDiscounts -= pwdDiscount;
+    }
+
+    return totalCostBeforeDiscounts;
+}
+
+private int calculateAdditionalCosts(int baseCost) {
+    double discountPercentage = 0.3;
+    int seniorCitizenCost = cbSeniorCitizen.isSelected() ? (int) (baseCost * discountPercentage) : 0;
+    int pwdCost = cbPWD.isSelected() ? (int) (baseCost * discountPercentage) : 0;
+    int dayTourCost = DaytourCheckBox.isSelected() ? 700 : 0;
+    int overnightCost = OvernightCheckBox.isSelected() ? calculateOvernightCost(baseCost) : 0;
+
+    return seniorCitizenCost + pwdCost + dayTourCost + overnightCost;
+}
+
+private int calculateOvernightCost(int baseCost) {
+    int nights = 0;
+    try {
+        nights = Integer.parseInt(nightsTextField.getText());
+    } catch (NumberFormatException e) {
+        return 0;
+    }
+
+    return nights * baseCost;
+}
+
+
+
+
+
+  private boolean isRoomAlreadyOccupied(String room) throws SQLException {
+    String sql = "SELECT COUNT(*) FROM (SELECT room FROM guestcheckin UNION SELECT room FROM guestreservation) AS combined WHERE room = ?";
+    try (PreparedStatement pst = con.prepareStatement(sql)) {
+        pst.setString(1, room);
+        try (ResultSet rs = pst.executeQuery()) {
+            if (rs.next()) {
+                int count = rs.getInt(1);
+                return count > 0;
+            }
+        }
+    }
+    return false;
+}
+  
+    private void updatePriceLabel() {
+    String selectedRoom = guestRoomCBox.getSelectedItem().toString();
+    int baseCost = getRoomPrice(selectedRoom);
+    int additionalCosts = calculateAdditionalCosts(baseCost);
+
+    int overnightCost = 0;
+    if (OvernightCheckBox.isSelected()) {
+        overnightCost = calculateOvernightCost(baseCost);
+        nightsJLabel.setVisible(true);
+        nightsTextField.setVisible(true);
+    } else {
+        nightsJLabel.setVisible(false);
+        nightsTextField.setVisible(false);
+    }
+
+    int totalCost = baseCost + additionalCosts + overnightCost;
+
+    if (cbSeniorCitizen.isSelected()) {
+        double discountPercentage = 0.3;
+        int seniorCitizenDiscount = (int) (totalCost * discountPercentage);
+        totalCost -= seniorCitizenDiscount;
+    }
+
+    if (cbPWD.isSelected()) {
+        double discountPercentage = 0.3;
+        int pwdDiscount = (int) (totalCost * discountPercentage);
+        totalCost -= pwdDiscount;
+    }
+
+    priceJLabel.setText("PRICE: PHP " + totalCost);
+}
+   
+
+
+
+
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        jPanel2 = new javax.swing.JPanel();
+        jPanel1 = new javax.swing.JPanel();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel1 = new javax.swing.JLabel();
+        guestName = new javax.swing.JTextField();
+        jLabel3 = new javax.swing.JLabel();
+        guestPhNum = new javax.swing.JTextField();
+        jLabel4 = new javax.swing.JLabel();
+        guestEmail = new javax.swing.JTextField();
+        jLabel5 = new javax.swing.JLabel();
+        guestRoomCBox = new javax.swing.JComboBox<>();
+        jLabel6 = new javax.swing.JLabel();
+        guestCheckInDate = new com.toedter.calendar.JDateChooser();
+        submitButton = new javax.swing.JButton();
+        jLabel7 = new javax.swing.JLabel();
+        cbSeniorCitizen = new javax.swing.JCheckBox();
+        jLabel8 = new javax.swing.JLabel();
+        cbPWD = new javax.swing.JCheckBox();
+        backButton = new javax.swing.JButton();
+        priceJLabel = new javax.swing.JLabel();
+        DaytourCheckBox = new javax.swing.JCheckBox();
+        OvernightCheckBox = new javax.swing.JCheckBox();
+        nightsTextField = new javax.swing.JTextField();
+        nightsJLabel = new javax.swing.JLabel();
+        roomsButton = new javax.swing.JButton();
+        guestcheckinTimePicker = new com.github.lgooddatepicker.components.TimePicker();
+        guestCheckOutDate = new com.toedter.calendar.JDateChooser();
+        jLabel9 = new javax.swing.JLabel();
+        guestcheckoutTimePicker = new com.github.lgooddatepicker.components.TimePicker();
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setResizable(false);
+
+        jPanel2.setBackground(new java.awt.Color(255, 255, 255));
+
+        jPanel1.setBackground(new java.awt.Color(72, 133, 206));
+
+        jLabel2.setText("Resort Front Desk System - Check In");
+        jLabel2.setFont(new java.awt.Font("Monospaced", 1, 24)); // NOI18N
+        jLabel2.setForeground(new java.awt.Color(255, 255, 255));
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addContainerGap(83, Short.MAX_VALUE)
+                .addComponent(jLabel2)
+                .addGap(62, 62, 62))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addContainerGap(36, Short.MAX_VALUE)
+                .addComponent(jLabel2)
+                .addGap(31, 31, 31))
+        );
+
+        jLabel1.setText("Name:");
+
+        jLabel3.setText("Phone Number:");
+
+        jLabel4.setText("Email:");
+
+        jLabel5.setText("Room:");
+
+        guestRoomCBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Room1", "Room2", "Room3", "Cottage1", "Cottage2", "Cottage3" }));
+        guestRoomCBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                guestRoomCBoxActionPerformed(evt);
+            }
+        });
+
+        jLabel6.setText("Check-in:");
+
+        submitButton.setText("SUBMIT");
+        submitButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                submitButtonActionPerformed(evt);
+            }
+        });
+
+        jLabel7.setText("Are you a:");
+
+        cbSeniorCitizen.setText("Senior Citizen");
+        cbSeniorCitizen.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbSeniorCitizenActionPerformed(evt);
+            }
+        });
+
+        jLabel8.setText("Are you a:");
+
+        cbPWD.setText("PWD");
+        cbPWD.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbPWDActionPerformed(evt);
+            }
+        });
+
+        backButton.setText("BACK");
+        backButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                backButtonActionPerformed(evt);
+            }
+        });
+
+        priceJLabel.setText("PRICE:");
+
+        DaytourCheckBox.setText("Day tour:");
+        DaytourCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                DaytourCheckBoxActionPerformed(evt);
+            }
+        });
+
+        OvernightCheckBox.setText("Overnight");
+        OvernightCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                OvernightCheckBoxActionPerformed(evt);
+            }
+        });
+
+        nightsJLabel.setText("Room cost (per night):");
+
+        roomsButton.setText("Rooms");
+        roomsButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                roomsButtonActionPerformed(evt);
+            }
+        });
+
+        jLabel9.setText("Check-out");
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGap(88, 88, 88)
+                .addComponent(roomsButton)
+                .addGap(0, 0, Short.MAX_VALUE))
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGap(25, 25, 25)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(submitButton)
+                        .addGap(170, 170, 170)
+                        .addComponent(backButton)
+                        .addGap(40, 40, 40))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel1)
+                            .addComponent(guestName, javax.swing.GroupLayout.PREFERRED_SIZE, 251, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(guestPhNum, javax.swing.GroupLayout.PREFERRED_SIZE, 168, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel3))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(jLabel8)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(cbPWD))
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(jLabel7)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(cbSeniorCitizen))
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addGap(6, 6, 6)
+                                .addComponent(DaytourCheckBox)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(OvernightCheckBox)))
+                        .addGap(57, 57, 57))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(guestEmail, javax.swing.GroupLayout.PREFERRED_SIZE, 194, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel4)
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(guestCheckInDate, javax.swing.GroupLayout.PREFERRED_SIZE, 213, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(guestcheckinTimePicker, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jLabel5)
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(guestRoomCBox, javax.swing.GroupLayout.PREFERRED_SIZE, 213, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(priceJLabel))
+                            .addComponent(jLabel6)
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(guestCheckOutDate, javax.swing.GroupLayout.PREFERRED_SIZE, 213, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(guestcheckoutTimePicker, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(nightsJLabel)
+                            .addComponent(nightsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel9))
+                        .addGap(0, 0, Short.MAX_VALUE))))
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGap(114, 114, 114)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel7)
+                            .addComponent(cbSeniorCitizen))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(cbPWD)
+                            .addComponent(jLabel8))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(DaytourCheckBox)
+                            .addComponent(OvernightCheckBox)))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel1)
+                        .addGap(1, 1, 1)
+                        .addComponent(guestName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jLabel3)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(guestPhNum, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabel4)
+                .addGap(12, 12, 12)
+                .addComponent(guestEmail, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel5)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(guestRoomCBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(priceJLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(roomsButton)
+                .addGap(18, 18, 18)
+                .addComponent(jLabel6)
+                .addGap(7, 7, 7)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(guestCheckInDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(guestcheckinTimePicker, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabel9)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(guestCheckOutDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(nightsJLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(nightsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 11, Short.MAX_VALUE)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(backButton)
+                            .addComponent(submitButton))
+                        .addGap(20, 20, 20))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(guestcheckoutTimePicker, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE))))
+        );
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+
+        pack();
+        setLocationRelativeTo(null);
+    }// </editor-fold>//GEN-END:initComponents
+    
+    private void submitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitButtonActionPerformed
+
+    int totalCost = calculateTotalCost();
+    String selectedRoom = guestRoomCBox.getSelectedItem().toString();
+    try {
+        if (isRoomAlreadyOccupied(selectedRoom)) {
+            JOptionPane.showMessageDialog(this, selectedRoom + " is already occupied.", "Error", JOptionPane.ERROR_MESSAGE);
+            return; 
+        }
+
+        
+        String guestcheckinSql = "INSERT INTO guestcheckin (`name`, `phnum`, `email`, `room`, `checkin`, `checkout`, `checkinTime`, `checkoutTime`, `isDaytour`, `isOvernight`, `isSeniorCitizen`, `isPWD`, `totalcost`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)";
+        try (PreparedStatement guestcheckinPst = con.prepareStatement(guestcheckinSql)) {
+            guestcheckinPst.setString(1, guestName.getText());
+            guestcheckinPst.setString(2, guestPhNum.getText());
+            guestcheckinPst.setString(3, guestEmail.getText());
+            guestcheckinPst.setString(4, guestRoomCBox.getSelectedItem().toString());
+            java.sql.Date checkinDate = new java.sql.Date(guestCheckInDate.getDate().getTime());
+            guestcheckinPst.setDate(5, checkinDate);
+            java.sql.Date checkoutDate = new java.sql.Date(guestCheckOutDate.getDate().getTime());
+            guestcheckinPst.setDate(6, checkoutDate);
+            java.sql.Time checkinTime = java.sql.Time.valueOf(guestcheckinTimePicker.getTime());
+            java.sql.Time checkoutTime = java.sql.Time.valueOf(guestcheckoutTimePicker.getTime());
+            guestcheckinPst.setTime(7, checkinTime);
+            guestcheckinPst.setTime(8, checkoutTime);
+            guestcheckinPst.setBoolean(9, DaytourCheckBox.isSelected());
+            guestcheckinPst.setBoolean(10, OvernightCheckBox.isSelected()); 
+            guestcheckinPst.setBoolean(11, cbSeniorCitizen.isSelected());
+            guestcheckinPst.setBoolean(12, cbPWD.isSelected());
+            guestcheckinPst.setInt(13, totalCost); 
+            guestcheckinPst.executeUpdate();
+        }
+
+        // Insert into guestcheckinlogs
+        String guestcheckinlogsSql = "INSERT INTO guestcheckinlogs (`name`, `phnum`, `email`, `room`, `checkin`, `checkout`, `checkinTime`, `checkoutTime`, `isDaytour`, `isOvernight`, `isSeniorCitizen`, `isPWD`, `totalcost`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)";
+        try (PreparedStatement guestcheckinlogsPst = con.prepareStatement(guestcheckinlogsSql)) {
+            guestcheckinlogsPst.setString(1, guestName.getText());
+            guestcheckinlogsPst.setString(2, guestPhNum.getText());
+            guestcheckinlogsPst.setString(3, guestEmail.getText());
+            guestcheckinlogsPst.setString(4, guestRoomCBox.getSelectedItem().toString());
+            java.sql.Date checkinDate = new java.sql.Date(guestCheckInDate.getDate().getTime());
+            guestcheckinlogsPst.setDate(5, checkinDate);
+            java.sql.Date checkoutDate = new java.sql.Date(guestCheckOutDate.getDate().getTime());
+            guestcheckinlogsPst.setDate(6, checkoutDate);
+            java.sql.Time checkinTime = java.sql.Time.valueOf(guestcheckinTimePicker.getTime());
+            java.sql.Time checkoutTime = java.sql.Time.valueOf(guestcheckoutTimePicker.getTime());
+            guestcheckinlogsPst.setTime(7, checkinTime);
+            guestcheckinlogsPst.setTime(8, checkoutTime);
+            guestcheckinlogsPst.setBoolean(9, DaytourCheckBox.isSelected());
+            guestcheckinlogsPst.setBoolean(10, OvernightCheckBox.isSelected()); 
+            guestcheckinlogsPst.setBoolean(11, cbSeniorCitizen.isSelected());
+            guestcheckinlogsPst.setBoolean(12, cbPWD.isSelected());
+            guestcheckinlogsPst.setInt(13, totalCost); 
+            guestcheckinlogsPst.executeUpdate();
+        }
+        
+        JOptionPane.showMessageDialog(this, "Check-in recorded successfully. Total Cost: PHP" + totalCost);
+    } catch (SQLException ex) {
+        Logger.getLogger(CheckIn.class.getName()).log(Level.SEVERE, null, ex);
+        JOptionPane.showMessageDialog(this, "Error recording check-in. Please try again.");
+    }
+        dispose();
+        ResortFrontDesk home1 = new ResortFrontDesk();
+        home1.setVisible(true);
+    }//GEN-LAST:event_submitButtonActionPerformed
+
+    private void guestRoomCBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_guestRoomCBoxActionPerformed
+        String selectedRoom = guestRoomCBox.getSelectedItem().toString();
+        int roomPrice = getRoomPrice(selectedRoom);
+        priceJLabel.setText("PRICE: PHP " + roomPrice);
+        updatePriceLabel();
+}
+    
+    
+ 
+
+private int getRoomPrice(String selectedRoom) {
+    int roomPrice = 0;
+
+    switch (selectedRoom) {
+        case "Room1":
+            roomPrice = 2000;
+            break;
+        case "Room2":
+            roomPrice = 2500;
+            break;
+        case "Room3":
+            roomPrice = 3000;
+            break;
+        case "Cottage1":
+            roomPrice = 750;
+            break;
+        case "Cottage2":
+            roomPrice = 800;
+            break;
+        case "Cottage3":
+            roomPrice = 920;
+            break;
+    }
+
+    return roomPrice; 
+              
+    }//GEN-LAST:event_guestRoomCBoxActionPerformed
+
+    private void backButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backButtonActionPerformed
+        dispose();
+        ResortFrontDesk home2 = new ResortFrontDesk();
+        home2.setVisible(true);
+    }//GEN-LAST:event_backButtonActionPerformed
+
+    private void DaytourCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DaytourCheckBoxActionPerformed
+        if(DaytourCheckBox.isSelected()){
+        updatePriceLabel();
+        nightsJLabel.setVisible(false);
+        nightsTextField.setVisible(false);
+        OvernightCheckBox.setVisible(false);
+        } else {
+        updatePriceLabel();
+        OvernightCheckBox.setVisible(true);
+        }
+        
+        
+
+    }//GEN-LAST:event_DaytourCheckBoxActionPerformed
+
+    private void OvernightCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_OvernightCheckBoxActionPerformed
+        if (OvernightCheckBox.isSelected()) {
+        updatePriceLabel();
+        DaytourCheckBox.setVisible(false);
+        nightsJLabel.setVisible(true);
+        nightsTextField.setVisible(true);
+        } else {
+        updatePriceLabel();
+        DaytourCheckBox.setVisible(true);
+        nightsJLabel.setVisible(false);
+        nightsTextField.setVisible(false);
+        }
+        
+
+    }//GEN-LAST:event_OvernightCheckBoxActionPerformed
+
+    private void cbSeniorCitizenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbSeniorCitizenActionPerformed
+        updatePriceLabel();
+    }//GEN-LAST:event_cbSeniorCitizenActionPerformed
+
+    private void cbPWDActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbPWDActionPerformed
+        updatePriceLabel();
+    }//GEN-LAST:event_cbPWDActionPerformed
+
+    private void roomsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_roomsButtonActionPerformed
+        Rooms rooms = new Rooms();
+        rooms.setVisible(true);
+    }//GEN-LAST:event_roomsButtonActionPerformed
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String args[]) {
+        /* Set the Nimbus look and feel */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(CheckIn.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(CheckIn.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(CheckIn.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(CheckIn.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //</editor-fold>
+
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                new CheckIn().setVisible(true);
+            }
+        });
+    }
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox DaytourCheckBox;
+    private javax.swing.JCheckBox OvernightCheckBox;
+    private javax.swing.JButton backButton;
+    private javax.swing.JCheckBox cbPWD;
+    private javax.swing.JCheckBox cbSeniorCitizen;
+    private com.toedter.calendar.JDateChooser guestCheckInDate;
+    private com.toedter.calendar.JDateChooser guestCheckOutDate;
+    private javax.swing.JTextField guestEmail;
+    private javax.swing.JTextField guestName;
+    private javax.swing.JTextField guestPhNum;
+    private javax.swing.JComboBox<String> guestRoomCBox;
+    private com.github.lgooddatepicker.components.TimePicker guestcheckinTimePicker;
+    private com.github.lgooddatepicker.components.TimePicker guestcheckoutTimePicker;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JLabel nightsJLabel;
+    private javax.swing.JTextField nightsTextField;
+    private javax.swing.JLabel priceJLabel;
+    private javax.swing.JButton roomsButton;
+    private javax.swing.JButton submitButton;
+    // End of variables declaration//GEN-END:variables
+}
